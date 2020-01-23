@@ -1,10 +1,10 @@
-# target-json
+# target-s3-json
 
-A [Singer](https://singer.io) target that writes data to JSON files.
+A [Singer](https://singer.io) target that writes data to JSON files and uploads to S3. Forked from (target-json)[https://github.com/dvelardez/target-json] and pulling from (pipelinewise-target-s3-csv)[https://github.com/transferwise/pipelinewise-target-s3-csv].
 
 ## How to use it
 
-`target-json` works together with any other [Singer Tap] to move data
+`target-s3-json` works together with any other [Singer Tap] to move data
 from sources like [Braintree], [Freshdesk] and [Hubspot] to
 JSON-formatted files. It is commonly used for loading data into a database
 like Bigquery or simply storing a backup of the source data set.
@@ -15,17 +15,17 @@ First, make sure Python 3 is installed on your system or follow these
 installation instructions for [Mac](python-mac) or
 [Ubuntu](python-ubuntu).
 
-`target-json` can be run with any [Singer Tap], but we'll use
+`target-s3-json` can be run with any [Singer Tap], but we'll use
 [`tap-fixerio`][Fixerio] - which pulls currency exchange rate data
 from a public data set - as an example.
 
-These commands will install `tap-fixerio` and `target-json` with pip,
+These commands will install `tap-fixerio` and `target-s3-json` with pip,
 and then run them together, piping the output of `tap-fixerio` to
-`target-json`:
+`target-s3-json`:
 
 ```bash
-› pip install target-json tap-fixerio
-› tap-fixerio | target-json
+› pip install target-s3-json tap-fixerio
+› tap-fixerio | target-s3-json
   INFO Replicating exchange rate data from fixer.io starting from 2018-02-08
   INFO Tap exiting normally
   {"start_date": "2018-02-08"}
@@ -44,18 +44,18 @@ command above to the command used to run your Tap.
 
 ### Optional Configuration
 
-`target-json` takes an optional configuration file that can be used to
+`target-s3-json` takes an optional configuration file that can be used to
 set formatting parameters like the delimiter - see
 [config.sample.json](config.sample.json) for examples. To run
-`target-json` with the configuration file, use this command:
+`target-s3-json` with the configuration file, use this command:
 
 ```bash
-› tap-fixerio | target-json -c my-config.json
+› tap-fixerio | target-s3-json -c my-config.json
 ```
 
 ### Save State (optional)
 
-When `target-json` is run as above it writes log lines to `stderr`,
+When `target-s3-json` is run as above it writes log lines to `stderr`,
 but `stdout` is reserved for outputting **State** messages. A State
 message is a JSON-formatted line with data that the Tap wants
 persisted between runs - often "high water mark" information that the
@@ -77,7 +77,7 @@ next time the Tap is run it should pick up from that point.
 To run the [`tap-fixerio`][Fixerio] incrementally, point it to a State file like this:
 
 ```bash
-› tap-fixerio --state state.json | target-json -c config.json -s state.json
+› tap-fixerio --state state.json | target-s3-json -c config.json -s state.json
 ```
 
 ---

@@ -2,19 +2,24 @@
 
 from setuptools import setup
 
-setup(name='target-json',
-      version='0.0.11',
-      description='Singer.io target for writing JSON files',
-      author='dvelardez',
-      url='https://singer.io',
+setup(name='target-s3-json',
+      version='0.0.01',
+      description='Singer.io target for writing JSON files and upload to S3 - PipelineWise compatible',
+      author='wclark',
+      url='https://github.com/jwalterclark/target-s3-json',
       classifiers=['Programming Language :: Python :: 3 :: Only'],
-      py_modules=['target_json'],
+      py_modules=['target_s3_json'],
       install_requires=[
           'jsonschema==2.6.0',
           'singer-python==5.0.4',
+          'boto3==1.9.57',
+          'backoff==1.3.2'
       ],
       entry_points='''
           [console_scripts]
-          target-json=target_json:main
+          target-s3-json=target_s3_json:main
       ''',
-)
+      packages=["target_s3_json"],
+      package_data={},
+      include_package_data=True,
+      )

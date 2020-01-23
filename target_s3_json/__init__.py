@@ -10,6 +10,9 @@ import collections
 from jsonschema.validators import Draft4Validator
 import singer
 
+from target_s3_json import s3
+from target_s3_json import utils
+
 logger = singer.get_logger()
 
 
@@ -27,7 +30,8 @@ def persist_lines(delimiter, lines, state_file=None, bq_field_name_hook=False, b
     schemas = {}
     key_properties = {}
     validators = {}
-    
+
+    filenames = []
     now = datetime.now().strftime('%Y%m%dT%H%M%S')
 
     for line in lines:
@@ -38,21 +42,29 @@ def persist_lines(delimiter, lines, state_file=None, bq_field_name_hook=False, b
             raise
 
         if 'type' not in o:
-            raise Exception("Line is missing required key 'type': {}".format(line))
+            raise Exception(
+                "Line is missing required key 'type': {}".format(line))
         t = o['type']
 
         if t == 'RECORD':
             if 'stream' not in o:
-                raise Exception("Line is missing required key 'stream': {}".format(line))
+                raise Exception(
+                    "Line is missing required key 'stream': {}".format(line))
             if o['stream'] not in schemas:
-                raise Exception("A record for stream {} was encountered before a corresponding schema".format(o['stream']))
+                raise Exception(
+                    "A record for stream {} was encountered before a corresponding schema".format(o['stream']))
 
             validators[o['stream']].validate(o['record'])
 
             filename = o['stream'] + '-' + now + '.json'
-            
+            filename = os.path.expanduser(
+                os.path.join(tempfile.gettempdir(), filename))
+            if not filename in filenames:
+                filenames.append(filename)
+
             with open(filename, 'a') as json_file:
-                record = bq_hook(o['record']) if bq_field_name_hook else o['record']
+                record = bq_hook(
+                    o['record']) if bq_field_name_hook else o['record']
                 json_file.write(json.dumps(record) + delimiter)
 
             state = None
@@ -63,7 +75,8 @@ def persist_lines(delimiter, lines, state_file=None, bq_field_name_hook=False, b
                 save_state(state_file, stream, state, bookmark_keys)
         elif t == 'SCHEMA':
             if 'stream' not in o:
-                raise Exception("Line is missing required key 'stream': {}".format(line))
+                raise Exception(
+                    "Line is missing required key 'stream': {}".format(line))
             stream = o['stream']
             schemas[stream] = o['schema']
             validators[stream] = Draft4Validator(o['schema'])
@@ -73,7 +86,15 @@ def persist_lines(delimiter, lines, state_file=None, bq_field_name_hook=False, b
         else:
             raise Exception("Unknown message type {} in message {}"
                             .format(o['type'], o))
-    
+
+    # JSON files created uploading to S3
+    for filename in filenames:
+        s3.upload_file(filename, config.get('s3_bucket'),
+                       config.get('s3_key_prefix'))
+
+        # Remove the uploaded file
+        os.remove(filename)
+
     return state
 
 
@@ -118,13 +139,13 @@ def main():
         config = {}
 
     input = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8')
-    #with open('ads_insights.json', 'r') as input:
+    # with open('ads_insights.json', 'r') as input:
     state = persist_lines(config.get('delimiter', ''),
                           input,
                           args.state,
                           config.get('bq_field_name_hook', False),
                           config.get('bookmark_keys', {}))
-        
+
     emit_state(state)
     logger.debug("Exiting normally")
 
