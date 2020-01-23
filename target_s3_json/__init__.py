@@ -93,6 +93,8 @@ def persist_lines(lines, config, state_file=None):
             if 'key_properties' not in o:
                 raise Exception("key_properties field is required")
             key_properties[stream] = o['key_properties']
+        elif t == 'ACTIVATE_VERSION':
+            logger.debug('ACTIVATE_VERSION message')
         else:
             raise Exception("Unknown message type {} in message {}"
                             .format(o['type'], o))
