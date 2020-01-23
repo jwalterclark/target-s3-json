@@ -5,6 +5,7 @@ import io
 import os
 import sys
 import json
+import tempfile
 from datetime import datetime
 import collections
 
