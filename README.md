@@ -1,6 +1,6 @@
 # target-s3-json
 
-A [Singer](https://singer.io) target that writes data to JSON files and uploads to S3. Forked from (target-json)[https://github.com/dvelardez/target-json] and pulling from (pipelinewise-target-s3-csv)[https://github.com/transferwise/pipelinewise-target-s3-csv].
+A [Singer](https://singer.io) target that writes data to JSON files and uploads to S3. Forked from [target-json](https://github.com/dvelardez/target-json) and pulling from [pipelinewise-target-s3-csv](https://github.com/transferwise/pipelinewise-target-s3-csv).
 
 ## How to use it
 
