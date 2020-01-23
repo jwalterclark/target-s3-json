@@ -12,6 +12,7 @@ setup(name='target-s3-json',
       install_requires=[
           'jsonschema==2.6.0',
           'singer-python==5.0.4',
+          'inflection==0.3.1',
           'boto3==1.9.57',
           'backoff==1.3.2'
       ],
