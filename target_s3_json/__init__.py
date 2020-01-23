@@ -24,15 +24,25 @@ def emit_state(state):
         sys.stdout.flush()
 
 
-def persist_lines(delimiter, lines, state_file=None, bq_field_name_hook=False, bookmark_keys={}):
+# def persist_lines(delimiter, lines, state_file=None, bq_field_name_hook=False, bookmark_keys={}):
+def persist_lines(lines, config, state_file=None):
     state = None
     stream = None
     schemas = {}
     key_properties = {}
     validators = {}
 
+    delimiter = config.get('delimiter', '')
+    include_time_suffix = config.get('include_time_suffix', True)
+    bq_field_name_hook = config.get('bq_field_name_hook', False)
+    bookmark_keys = config.get('bookmark_keys', {})
+
     filenames = []
-    now = datetime.now().strftime('%Y%m%dT%H%M%S')
+
+    time_suffix = ''
+    if include_time_suffix:
+        now = datetime.now().strftime('%Y%m%dT%H%M%S')
+        time_suffix = '-' + now
 
     for line in lines:
         try:
@@ -56,7 +66,7 @@ def persist_lines(delimiter, lines, state_file=None, bq_field_name_hook=False, b
 
             validators[o['stream']].validate(o['record'])
 
-            filename = o['stream'] + '-' + now + '.json'
+            filename = o['stream'] + time_suffix + '.json'
             filename = os.path.expanduser(
                 os.path.join(tempfile.gettempdir(), filename))
             if not filename in filenames:
@@ -140,11 +150,9 @@ def main():
 
     input = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8')
     # with open('ads_insights.json', 'r') as input:
-    state = persist_lines(config.get('delimiter', ''),
-                          input,
-                          args.state,
-                          config.get('bq_field_name_hook', False),
-                          config.get('bookmark_keys', {}))
+    state = persist_lines(input,
+                          config,
+                          args.state,)
 
     emit_state(state)
     logger.debug("Exiting normally")
