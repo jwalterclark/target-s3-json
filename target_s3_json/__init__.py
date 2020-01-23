@@ -152,6 +152,14 @@ def main():
     else:
         config = {}
 
+    config_errors = utils.validate_config(config)
+    if len(config_errors) > 0:
+        logger.error(
+            "Invalid configuration:\n   * {}".format('\n   * '.join(config_errors)))
+        exit(1)
+
+    s3.setup_aws_client(config)
+
     input = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8')
     # with open('ads_insights.json', 'r') as input:
     state = persist_lines(input,
