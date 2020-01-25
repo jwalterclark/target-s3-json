@@ -39,7 +39,7 @@ def persist_lines(lines, config, state_file=None):
     bq_field_name_hook = config.get('bq_field_name_hook', False)
     bookmark_keys = config.get('bookmark_keys', {})
 
-    filenames = []
+    filenames = {}
 
     time_suffix = ''
     if include_time_suffix:
@@ -71,8 +71,8 @@ def persist_lines(lines, config, state_file=None):
             filename = o['stream'] + time_suffix + '.json'
             filename = os.path.expanduser(
                 os.path.join(tempfile.gettempdir(), filename))
-            if not filename in filenames:
-                filenames.append(filename)
+            if not filename in filenames.values:
+                filenames[o['stream']] = filename
 
             with open(filename, 'a') as json_file:
                 record = bq_hook(
@@ -102,9 +102,11 @@ def persist_lines(lines, config, state_file=None):
                             .format(o['type'], o))
 
     # JSON files created uploading to S3
-    for filename in filenames:
-        s3.upload_file(filename, config.get('s3_bucket'),
-                       config.get('s3_key_prefix'))
+    for stream_name, filename in filenames.items():
+        prefix = config.get('s3_key_prefix')
+        if config.get('stream_name_folders', False):
+            prefix = '/'.join([prefix, stream_name])
+        s3.upload_file(filename, config.get('s3_bucket'), prefix)
 
         # Remove the uploaded file
         os.remove(filename)

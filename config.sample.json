@@ -3,6 +3,7 @@
     "aws_secret_access_key": "SECRET",
     "s3_bucket": "BUCKET",
     "s3_key_prefix": "SOME-PREFIX/",
+    "stream_name_folders": false,
     "delimiter": "\n",
     "bq_field_name_hook": true,
     "bookmark_keys": {
