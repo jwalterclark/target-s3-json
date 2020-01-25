@@ -71,7 +71,7 @@ def persist_lines(lines, config, state_file=None):
             filename = o['stream'] + time_suffix + '.json'
             filename = os.path.expanduser(
                 os.path.join(tempfile.gettempdir(), filename))
-            if not filename in filenames.values:
+            if not filename in filenames.values():
                 filenames[o['stream']] = filename
 
             with open(filename, 'a') as json_file:
