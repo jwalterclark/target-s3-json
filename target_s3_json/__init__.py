@@ -105,7 +105,7 @@ def persist_lines(lines, config, state_file=None):
     for stream_name, filename in filenames.items():
         prefix = config.get('s3_key_prefix')
         if config.get('stream_name_folders', False):
-            prefix = '/'.join([prefix, stream_name])
+            prefix = prefix + stream_name + '/'
         s3.upload_file(filename, config.get('s3_bucket'), prefix)
 
         # Remove the uploaded file
